@@ -82,10 +82,39 @@ This project implements the **ReAct (Reasoning + Acting)** pattern, where the AI
 
 ### 💡 Example Queries
 
+#### 🧠 Simple Tasks
+- "What is the current time?"
+- "Calculate 15 + 27"
 - "Create a shopping list and save it to a file"
-- "Analyze the current weather data"
-- "Help me organize my daily tasks"
-- "Write a summary of today's activities"
+
+#### 🤔 Multi-Step Reasoning Tasks
+
+These examples demonstrate the ReAct pattern by requiring the agent to:
+1. **Think** about the problem and break it into steps
+2. **Act** by using tools (calculate, write_file, read_file, get_current_time)
+3. **Observe** the results from each action
+4. **Repeat** the cycle until the task is complete
+
+- **File Operations**: "Create a file called 'notes.txt' with some important notes, then read it back to me"
+- **Data Processing**: "Calculate the sum of 25, 37, and 48, then save the result to a file called 'calculation.txt'"
+- **Time-Based Tasks**: "What time is it now? Then create a file called 'timestamp.txt' with the current time"
+- **Complex Calculations**: "Calculate (15 * 3) + (27 / 9) and save the result to a file"
+- **Multi-File Operations**: "Create a file called 'todo.txt' with a todo list, then create another file called 'summary.txt' that says 'Todo list created successfully'"
+- **Conditional Reasoning**: "Get the current time, then create a file called 'time_log.txt' with the message 'Current time logged'"
+- **Data Analysis**: "Calculate the average of 10, 20, 30, 40, and 50, then save both the individual numbers and the average to a file called 'statistics.txt'"
+- **Workflow Tasks**: "Create a file called 'workflow.txt' with the text 'Step 1 completed', then read the file to confirm it was created"
+- **Mathematical Operations**: "Calculate 100 divided by 4, then multiply the result by 3, and save the final result to 'math_result.txt'"
+- **Information Gathering**: "What time is it? Then create a file called 'time_report.txt' with the current time and a message saying 'Time report generated'"
+
+#### 🧪 Advanced Testing Examples
+
+For developers wanting to test the agent's reasoning capabilities:
+
+- **Multi-Step Math**: "Calculate 50 * 2, then add 25 to the result, then divide by 5, and save the final answer to 'complex_math.txt'"
+- **File Chain**: "Create file 'step1.txt' with 'Hello', then create 'step2.txt' with 'World', then read both files and create 'combined.txt' with their contents"
+- **Time Series**: "Get the current time, wait a moment, then get the time again and create a file called 'time_comparison.txt' with both timestamps"
+- **Data Transformation**: "Calculate the square of 12, then calculate the cube of 3, then add them together and save to 'transformed_data.txt'"
+- **Validation Workflow**: "Create a file called 'test.txt' with 'Test content', then read it back to verify it was written correctly"
 
 ## 🛠️ Available Tools
 

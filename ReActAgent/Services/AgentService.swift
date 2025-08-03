@@ -317,31 +317,47 @@ class AgentService: ObservableObject {
         }.joined(separator: "\n")
         
         return """
-        You need to solve a problem. To do this, you need to break the problem down into multiple steps. For each step, first use <thought> to think about what to do, then decide on an <action> using one of the available tools. Next, you will receive an <observation> from the environment/tools based on your action. Continue this thinking and acting process until you have enough information to provide a <final_answer>.
+        You are tasked with solving a problem by breaking it into logical steps. 
+        
+        For each step, use <thought> to explain your reasoning, then select an <action> using one of the available tools or provide a <final_answer> if the solution is complete. 
+        
+        After an <action>, you will receive an <observation> from the environment or tools. Continue this process until you can provide a <final_answer>.
 
-        Please strictly use the following XML tag format for all steps:
+        Strictly use the following XML tag format for all steps:
         - <question> User question </question>
-        - <thought> Thinking process </thought>
-        - <action> Tool operation to take </action>
-        - <observation> Results returned by tools or environment </observation>
-        - <final_answer> Final answer </final_answer>
+        - <thought> Reasoning for the next step </thought>
+        - <action> Tool operation to execute </action>
+        - <observation> Results from tools or environment </observation>
+        - <final_answer> Final solution to the question </final_answer>
 
-        Please strictly follow these rules:
-        - Your response must always include two tags: first <thought>, then either <action> or <final_answer>
-        - After outputting <action>, stop generating immediately and wait for the actual <observation>. Generating <observation> yourself will cause errors
+        Rules:
+        - Always include <thought> followed by either <action> or <final_answer> in each step.
+        - After <action>, stop and wait for the actual <observation>. Do not generate <observation> yourself.
+        - Use clear, concise reasoning in <thought> to justify the chosen action or final answer.
 
-        IMPORTANT: Action format rules:
-        - For tools with NO arguments: use just the tool name, e.g., <action>get_current_time</action>
-        - For tools WITH arguments: use function call syntax with parentheses and comma-separated quoted arguments, e.g., <action>write_to_file("/path/to/file.txt", "content here")</action>
-        - Do NOT use key-value format like tool_name param1="value1" param2="value2"
-        - Always enclose string arguments in double quotes
-        - Use commas to separate multiple arguments
+        Action format:
+        - For tools without arguments: <action>tool_name</action>
+        - For tools with arguments: <action>tool_name("arg1", "arg2")</action>
+        - Enclose string arguments in double quotes and separate multiple arguments with commas.
+        - Do not use key-value or other formats.
 
-        Available tools for this task:
+        Example:
+        User: 
+            <question>"What is the current time?"</question>
+        Agent: 
+            <thought>The user wants the current time. The get_current_time tool is appropriate.</thought>
+            <action>get_current_time</action>
+        User:
+            <observation>04:15 PM NZST</observation>
+        Agent: 
+            <thought>The observation provides the time, which answers the question.</thought>
+            <final_answer>The current time is 04:15 PM NZST.</final_answer>
+
+        Available tools:
         \(toolList)
 
-        Environment information:
-        Operating System: iOS
+        Environment:
+        - Operating System: iOS
         """
     }
 }
