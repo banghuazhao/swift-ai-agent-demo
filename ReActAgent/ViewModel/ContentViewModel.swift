@@ -15,6 +15,12 @@ class ContentViewModel {
     var steps: [AgentStep] = []
     var isRunning: Bool = false
     var errorMessage: String?
+    let suggestedQuestions: [String] = [
+        "What is the current time?",
+        "Calculate 15 * 24 + 7.",
+        "Create a match three game",
+        "Plan a 3-day learning schedule for Swift concurrency."
+    ]
 
     init(
         agentService: AgentService = AgentService()

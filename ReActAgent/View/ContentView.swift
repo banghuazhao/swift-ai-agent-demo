@@ -28,6 +28,7 @@ struct ContentView: View {
                         TextField("Enter your question or task...", text: $model.userInput, axis: .vertical)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .lineLimit(3...6)
+                            .disabled(model.isRunning)
                         
                         HStack {
                             Button("Clear") {
@@ -93,20 +94,53 @@ struct ContentView: View {
                         }
                     }
                 } else {
-                    Spacer()
-                    VStack(spacing: 16) {
-                        Image(systemName: "brain.head.profile")
-                            .font(.system(size: 60))
-                            .foregroundColor(.secondary.opacity(0.5))
-                        Text("Ready to help!")
-                            .font(.title2)
-                            .foregroundColor(.secondary)
-                        Text("Enter a question above to see the ReAct agent in action.")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            Image(systemName: "brain.head.profile")
+                                .font(.system(size: 60))
+                                .foregroundColor(.secondary.opacity(0.5))
+                            
+                            if model.isRunning {
+                                Text("The model is thinking...")
+                                    .font(.title2)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text("Ready to help!")
+                                    .font(.title2)
+                                    .foregroundColor(.secondary)
+                                Text("Enter a question above to see the ReAct agent in action.")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Try one of these:")
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    ForEach(model.suggestedQuestions, id: \.self) { question in
+                                        Button {
+                                            model.userInput = question
+                                        } label: {
+                                            Text(question)
+                                                .font(.subheadline)
+                                                .foregroundColor(.accentColor)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 10)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 10)
+                                                        .fill(Color(.systemBackground))
+                                                )
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .frame(maxWidth: 520, alignment: .leading)
+                            }
+                        }
+                        .padding(.horizontal)
                     }
-                    Spacer()
                 }
             }
             .navigationBarHidden(true)
