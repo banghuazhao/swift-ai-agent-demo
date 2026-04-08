@@ -30,16 +30,9 @@ class ContentViewModel {
                 self?.steps = newSteps
             }
             .store(in: &cancellables)
-
-        agentService.$isRunning
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] running in
-                self?.isRunning = running
-            }
-            .store(in: &cancellables)
     }
 
-    func startAgent() {
+    func startAgent() async {
         guard !userInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             errorMessage = "Please enter a question or task."
             return
@@ -47,9 +40,10 @@ class ContentViewModel {
 
         errorMessage = nil
 
-        Task {
-            await agentService.runAgent(with: userInput)
-        }
+        isRunning = true
+        defer { isRunning = false }
+        
+        await agentService.runAgent(with: userInput)
     }
 
     func clearSteps() {

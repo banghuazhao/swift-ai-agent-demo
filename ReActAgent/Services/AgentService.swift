@@ -50,10 +50,10 @@ enum AgentError: LocalizedError {
 // MARK: - Agent Service
 class AgentService: ObservableObject {
     @Published var steps: [AgentStep] = []
-    @Published var isRunning = false
+    typealias ToolName = String
     
     private let chatGPTService: ChatGPTService
-    private var tools: [String: AgentTool] = [:]
+    private var tools: [ToolName: AgentTool] = [:]
     private var messages: [ChatMessage] = []
     
     init(chatGPTService: ChatGPTService = ChatGPTService()) {
@@ -63,7 +63,6 @@ class AgentService: ObservableObject {
     
     func runAgent(with userInput: String) async {
         await MainActor.run {
-            self.isRunning = true
             self.steps.removeAll()
             self.messages.removeAll()
         }
@@ -112,10 +111,6 @@ class AgentService: ObservableObject {
             }
         } catch {
             await addStep(.error, content: error.localizedDescription)
-        }
-        
-        await MainActor.run {
-            self.isRunning = false
         }
     }
     

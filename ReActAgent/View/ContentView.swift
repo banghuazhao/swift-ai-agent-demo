@@ -39,7 +39,9 @@ struct ContentView: View {
                             Spacer()
                             
                             Button {
-                                model.startAgent()
+                                Task {
+                                    await model.startAgent()
+                                }
                             } label: {
                                 if model.isRunning {
                                     HStack {
