@@ -164,7 +164,14 @@ class AgentService {
                 try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
                 
                 try content.write(toFile: fileURL.path(), atomically: true, encoding: .utf8)
-                return "Write successful"
+                let writtenContent = try String(contentsOfFile: fileURL.path(), encoding: .utf8)
+                return """
+                Write successful: \(relativePath)
+
+                <file_content>
+                \(writtenContent)
+                </file_content>
+                """
             } catch {
                 throw AgentError.executionError("Could not write file: \(error.localizedDescription)")
             }
