@@ -16,9 +16,9 @@ class ContentViewModel {
     var isRunning: Bool = false
     var errorMessage: String?
     let suggestedQuestions: [String] = [
-        "What is the current time?",
-        "Calculate 15 * 24 + 7.",
-        "Plan a travel plan to Auckland. Write the plan to a file plan.txt"
+        "Get the current time, wait a moment, then get the time again and create a file called 'time_comparison.txt' with both timestamps",
+        "Calculate 50 * 2, then add 25 to the result, then divide by 5, and save the final answer to 'complex_math.txt'",
+        "Create file 'step1.txt' with 'Hello', then create 'step2.txt' with 'World', then read both files and create 'combined.txt' with their contents"
     ]
 
     init(
