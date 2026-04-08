@@ -32,7 +32,7 @@ struct ChatCompletionResponse: Codable {
 class ChatGPTService {
     private let apiKey = Config.apiKey
     private let baseURL = "https://api.openai.com/v1/chat/completions"
-    private let model = "gpt-4o"
+    private let model = "gpt-5.1"
     
     func sendMessage(messages: [ChatMessage]) async throws -> String {
         guard let url = URL(string: baseURL) else {

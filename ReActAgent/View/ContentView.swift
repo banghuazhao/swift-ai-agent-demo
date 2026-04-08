@@ -79,8 +79,13 @@ struct ContentView: View {
                         ScrollView {
                             LazyVStack(spacing: 12) {
                                 ForEach(model.steps) { step in
-                                    StepView(step: step, model: model)
-                                        .id(step.id)
+                                    NavigationLink {
+                                        StepDetailView(step: step, model: model)
+                                    } label: {
+                                        StepView(step: step, model: model)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .id(step.id)
                                 }
                             }
                             .padding()
@@ -185,6 +190,7 @@ struct StepView: View {
                     .font(.body)
                     .foregroundColor(.primary)
                     .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
                 
                 if step.type == .finalAnswer {
                     Divider()
@@ -208,6 +214,47 @@ struct StepView: View {
     
     private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()
+        formatter.timeStyle = .medium
+        return formatter.string(from: date)
+    }
+}
+
+struct StepDetailView: View {
+    let step: AgentStep
+    let model: ContentViewModel
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 10) {
+                    Image(systemName: model.getStepIcon(step.type))
+                        .foregroundColor(model.getStepColor(step.type))
+                    Text(model.getStepTitle(step.type))
+                        .font(.headline)
+                        .foregroundColor(model.getStepColor(step.type))
+                }
+                
+                Text(formatTimestamp(step.timestamp))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Divider()
+                
+                Text(step.content)
+                    .font(.body.monospaced())
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding()
+        }
+        .navigationTitle("Step Details")
+        .navigationBarTitleDisplayMode(.inline)
+        .background(Color(.systemGroupedBackground))
+    }
+    
+    private func formatTimestamp(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
         formatter.timeStyle = .medium
         return formatter.string(from: date)
     }

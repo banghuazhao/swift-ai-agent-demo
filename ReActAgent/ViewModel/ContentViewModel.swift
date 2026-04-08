@@ -18,8 +18,7 @@ class ContentViewModel {
     let suggestedQuestions: [String] = [
         "What is the current time?",
         "Calculate 15 * 24 + 7.",
-        "Create a match three game",
-        "Plan a 3-day learning schedule for Swift concurrency."
+        "Plan a travel plan to Auckland. Write the plan to a file plan.txt"
     ]
 
     init(
