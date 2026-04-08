@@ -3,14 +3,12 @@
 // Copyright Apps Bay Limited. All rights reserved.
 //
 
-import Combine
 import SwiftUI
 
 @MainActor
 @Observable
 class ContentViewModel {
     private let agentService: AgentService
-    private var cancellables = Set<AnyCancellable>()
 
     // UI State
     var userInput: String = ""
@@ -22,14 +20,6 @@ class ContentViewModel {
         agentService: AgentService = AgentService()
     ) {
         self.agentService = agentService
-
-        // Observe agent service changes
-        agentService.$steps
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] newSteps in
-                self?.steps = newSteps
-            }
-            .store(in: &cancellables)
     }
 
     func startAgent() async {
@@ -39,11 +29,15 @@ class ContentViewModel {
         }
 
         errorMessage = nil
+        steps.removeAll()
 
         isRunning = true
         defer { isRunning = false }
         
-        await agentService.runAgent(with: userInput)
+        let stepStream = agentService.runAgent(with: userInput)
+        for await step in stepStream {
+            steps.append(step)
+        }
     }
 
     func clearSteps() {

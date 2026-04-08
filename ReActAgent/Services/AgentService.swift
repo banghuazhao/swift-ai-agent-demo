@@ -48,76 +48,75 @@ enum AgentError: LocalizedError {
 }
 
 // MARK: - Agent Service
-class AgentService: ObservableObject {
-    @Published var steps: [AgentStep] = []
+class AgentService {
     typealias ToolName = String
     
     private let chatGPTService: ChatGPTService
     private var tools: [ToolName: AgentTool] = [:]
-    private var messages: [ChatMessage] = []
     
     init(chatGPTService: ChatGPTService = ChatGPTService()) {
         self.chatGPTService = chatGPTService
         setupTools()
     }
     
-    func runAgent(with userInput: String) async {
-        await MainActor.run {
-            self.steps.removeAll()
-            self.messages.removeAll()
-        }
-        
-        // Setup initial messages
-        let systemPrompt = generateSystemPrompt()
-        messages.append(ChatMessage(role: "system", content: systemPrompt))
-        messages.append(ChatMessage(role: "user", content: "<question>\(userInput)</question>"))
-        
-        do {
-            while true {
-                // Request model response
-                print(messages)
-                let content = try await chatGPTService.sendMessage(messages: messages)
-                messages.append(ChatMessage(role: "assistant", content: content))
-                                
-                // Parse and handle thought
-                if let thought = extractThought(from: content) {
-                    await addStep(.thought, content: thought)
-                }
+    func runAgent(with userInput: String) -> AsyncStream<AgentStep> {
+        AsyncStream { continuation in
+            Task {
+                var messages: [ChatMessage] = []
                 
-                // Check for final answer
-                if let finalAnswer = extractFinalAnswer(from: content) {
-                    await addStep(.finalAnswer, content: finalAnswer)
-                    break
-                }
+                // Setup initial messages
+                let systemPrompt = generateSystemPrompt()
+                messages.append(ChatMessage(role: "system", content: systemPrompt))
+                messages.append(ChatMessage(role: "user", content: "<question>\(userInput)</question>"))
                 
-                // Parse and execute action
-                if let action = extractAction(from: content) {
-                    await addStep(.action, content: action)
-                    
-                    do {
-                        let observation = try await executeAction(action)
-                        await addStep(.observation, content: observation)
+                do {
+                    while true {
+                        // Request model response
+                        print(messages)
+                        let content = try await chatGPTService.sendMessage(messages: messages)
+                        messages.append(ChatMessage(role: "assistant", content: content))
                         
-                        // Add observation to messages
-                        messages.append(ChatMessage(role: "user", content: "<observation>\(observation)</observation>"))
-                    } catch {
-                        let errorMessage = error.localizedDescription
-                        await addStep(.error, content: errorMessage)
-                        messages.append(ChatMessage(role: "user", content: "<observation>Error: \(errorMessage)</observation>"))
+                        // Parse and handle thought
+                        if let thought = extractThought(from: content) {
+                            continuation.yield(makeStep(.thought, content: thought))
+                        }
+                        
+                        // Check for final answer
+                        if let finalAnswer = extractFinalAnswer(from: content) {
+                            continuation.yield(makeStep(.finalAnswer, content: finalAnswer))
+                            break
+                        }
+                        
+                        // Parse and execute action
+                        if let action = extractAction(from: content) {
+                            continuation.yield(makeStep(.action, content: action))
+                            
+                            do {
+                                let observation = try await executeAction(action)
+                                continuation.yield(makeStep(.observation, content: observation))
+                                
+                                // Add observation to messages
+                                messages.append(ChatMessage(role: "user", content: "<observation>\(observation)</observation>"))
+                            } catch {
+                                let errorMessage = error.localizedDescription
+                                continuation.yield(makeStep(.error, content: errorMessage))
+                                messages.append(ChatMessage(role: "user", content: "<observation>Error: \(errorMessage)</observation>"))
+                            }
+                        } else {
+                            throw AgentError.noActionFound
+                        }
                     }
-                } else {
-                    throw AgentError.noActionFound
+                } catch {
+                    continuation.yield(makeStep(.error, content: error.localizedDescription))
                 }
+                
+                continuation.finish()
             }
-        } catch {
-            await addStep(.error, content: error.localizedDescription)
         }
     }
     
-    @MainActor
-    private func addStep(_ type: AgentStep.StepType, content: String) {
-        let step = AgentStep(type: type, content: content, timestamp: Date())
-        steps.append(step)
+    private func makeStep(_ type: AgentStep.StepType, content: String) -> AgentStep {
+        AgentStep(type: type, content: content, timestamp: Date())
     }
     
     private func setupTools() {
