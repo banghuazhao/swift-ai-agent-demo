@@ -54,9 +54,19 @@ class ChatGPTService {
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
+        guard let httpResponse = response as? HTTPURLResponse else {
             throw ChatGPTError.invalidResponse
+        }
+        
+        guard 200...299 ~= httpResponse.statusCode else {
+            switch httpResponse.statusCode {
+            case 401:
+                throw ChatGPTError.unauthorized
+            case 429:
+                throw ChatGPTError.tooManyRequest
+            default:
+                throw ChatGPTError.invalidResponse
+            }
         }
         
         let chatResponse = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
@@ -73,6 +83,8 @@ enum ChatGPTError: LocalizedError {
     case invalidURL
     case invalidResponse
     case noContent
+    case unauthorized
+    case tooManyRequest
     
     var errorDescription: String? {
         switch self {
@@ -82,6 +94,10 @@ enum ChatGPTError: LocalizedError {
             return "Invalid response from server"
         case .noContent:
             return "No content in response"
+        case .unauthorized:
+            return "Unauthorized. Please double check API key"
+        case .tooManyRequest:
+            return "Too many request. Please double check the API key has enough quota"
         }
     }
 }
