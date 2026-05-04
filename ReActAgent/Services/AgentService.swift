@@ -64,19 +64,20 @@ class AgentService {
             Task {
                 var messages: [ChatMessage] = []
                 
-                // Setup initial messages
+                // Setup system prompt
                 let systemPrompt = generateSystemPrompt()
                 messages.append(ChatMessage(role: "system", content: systemPrompt))
+                
+                // User Question
                 messages.append(ChatMessage(role: "user", content: "<question>\(userInput)</question>"))
                 
                 do {
                     while true {
-                        // Request model response
-                        print(messages)
+                        // AI Response
                         let content = try await chatGPTService.sendMessage(messages: messages)
                         messages.append(ChatMessage(role: "assistant", content: content))
                         
-                        // Parse and handle thought
+                        // 🤔 Think
                         if let thought = extractThought(from: content) {
                             continuation.yield(makeStep(.thought, content: thought))
                         }
@@ -87,15 +88,14 @@ class AgentService {
                             break
                         }
                         
-                        // Parse and execute action
+                        // 🎯 Action
                         if let action = extractAction(from: content) {
                             continuation.yield(makeStep(.action, content: action))
                             
                             do {
+                                // 👀 observation
                                 let observation = try await executeAction(action)
                                 continuation.yield(makeStep(.observation, content: observation))
-                                
-                                // Add observation to messages
                                 messages.append(ChatMessage(role: "user", content: "<observation>\(observation)</observation>"))
                             } catch {
                                 let errorMessage = error.localizedDescription
@@ -109,6 +109,8 @@ class AgentService {
                 } catch {
                     continuation.yield(makeStep(.error, content: error.localizedDescription))
                 }
+                
+                messages.forEach { print($0) }
                 
                 continuation.finish()
             }
