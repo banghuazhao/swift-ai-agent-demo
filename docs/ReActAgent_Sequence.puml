@@ -1,0 +1,38 @@
+@startuml ReAct_Pattern_Sequence
+title ReAct pattern sequence diagram
+
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign center
+
+participant User as U #FFB6C1
+participant "ReAct AI Agent" as RA #48D1CC
+participant "LLM" as LLM #FFB347
+participant Tool as T #87CEEB
+
+U -> RA : Submit question
+activate RA
+
+RA -> LLM : Process question
+LLM --> RA : "Thought: Analyze question"
+
+loop [Process steps]
+    LLM --> RA : "Thought: Decide action or answer"
+
+    alt [Action required]
+        RA -> T : Execute action\n(e.g. tool_name(""arg1""))
+        activate T
+        T --> RA : Observation result
+        deactivate T
+
+        RA -> LLM : Process observation
+
+    else [Final answer ready]
+        LLM --> RA : Final answer
+        break
+    end
+end
+
+RA -> U : Display final answer
+deactivate RA
+
+@enduml
