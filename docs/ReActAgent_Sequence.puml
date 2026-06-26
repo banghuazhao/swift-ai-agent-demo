@@ -3,36 +3,36 @@ title ReAct pattern sequence diagram
 
 skinparam responseMessageBelowArrow true
 skinparam sequenceMessageAlign center
-
-participant User as U #FFB6C1
+participant "User" as U #efbbff
 participant "ReAct AI Agent" as RA #48D1CC
 participant "LLM" as LLM #FFB347
-participant Tool as T #87CEEB
+participant Tools as T #87CEEB
 
 U -> RA : Submit question
-activate RA
 
 RA -> LLM : Process question
-LLM --> RA : "Thought: Analyze question"
 
-loop [Process steps]
-    LLM --> RA : "Thought: Decide action or answer"
+loop Process steps
+    LLM --> RA : "🤔 Think"
 
-    alt [Action required]
-        RA -> T : Execute action\n(e.g. tool_name(""arg1""))
-        activate T
-        T --> RA : Observation result
-        deactivate T
+    LLM --> RA : "Decide action or final answer"
+
+    alt Action required
+        break Error occurred
+           RA -> T : 🎯 Execute action
+        end
+
+        T --> RA : 👀 Observation
 
         RA -> LLM : Process observation
 
-    else [Final answer ready]
-        LLM --> RA : Final answer
-        break
+    else Final Answer
+        break Final Answer
+            LLM --> RA : Final answer
+        end
     end
 end
 
 RA -> U : Display final answer
-deactivate RA
 
 @enduml
